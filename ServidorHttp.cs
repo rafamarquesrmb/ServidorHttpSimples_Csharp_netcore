@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -49,7 +50,7 @@ class ServidorHttp
             if(textoRequisicao.Length > 0)
             {
                 Console.WriteLine($"\n{textoRequisicao}\n");
-                var bytesConteudo = Encoding.UTF8.GetBytes(this.HtmlExemplo, 0, this.HtmlExemplo.Length);
+                var bytesConteudo = LerArquivo("/index.html");
                 var bytesCabecalho = GerarCabecalho("HTTP/1.1", "text/html;chaset=utf-8", "200",bytesConteudo.Length);
                 int bytesEnviados = conexao.Send(bytesCabecalho, bytesCabecalho.Length, 0);
                 bytesEnviados += conexao.Send(bytesConteudo, bytesConteudo.Length, 0);
@@ -77,5 +78,15 @@ class ServidorHttp
         html.Append("<title>Página Estática</title></head><body>");
         html.Append("<h1>Página Estática</h1></body></html>");
         this.HtmlExemplo = html.ToString();
+    }
+    public byte[] LerArquivo(string recurso)
+    {
+        string diretorio = "D:\\dev\\curso_ricardo_maroquio\\ServidorHttpSimples\\www";
+        string caminhoArquivo = diretorio + recurso.Replace("/", "\\");
+        if(File.Exists(caminhoArquivo))
+        {
+            return File.ReadAllBytes(caminhoArquivo);
+        }
+        else return new byte[0];
     }
 }
