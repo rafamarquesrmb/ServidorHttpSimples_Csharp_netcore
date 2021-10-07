@@ -50,8 +50,29 @@ class ServidorHttp
             if(textoRequisicao.Length > 0)
             {
                 Console.WriteLine($"\n{textoRequisicao}\n");
-                var bytesConteudo = LerArquivo("/index.html");
-                var bytesCabecalho = GerarCabecalho("HTTP/1.1", "text/html;chaset=utf-8", "200",bytesConteudo.Length);
+
+                string[] linhas = textoRequisicao.Split("\r\n");
+                int iPrimeiroEspaco = linhas[0].IndexOf(' ');
+                int iSegundoEspaco = linhas[0].LastIndexOf(' ');
+                string metodoHttp = linhas[0].Substring(0, iPrimeiroEspaco);
+                string recursoBuscado = linhas[0].Substring(iPrimeiroEspaco+1,iSegundoEspaco - iPrimeiroEspaco - 1);
+                string versaoHttp = linhas[0].Substring(iSegundoEspaco + 1);
+                iPrimeiroEspaco = linhas[1].IndexOf(' ');
+                string nomeHost = linhas[1].Substring(iPrimeiroEspaco + 1);
+
+
+
+                var bytesConteudo = LerArquivo(recursoBuscado);
+                byte[] bytesCabecalho = null;
+                if(bytesConteudo.Length > 0)
+                {
+                    bytesCabecalho = GerarCabecalho(versaoHttp, "text/html;chaset=utf-8", "200",bytesConteudo.Length);
+                }
+                else
+                {
+                    bytesConteudo = Encoding.UTF8.GetBytes("<h1>Erro 404 - Arquivo não encontrado</h1>");
+                    bytesCabecalho = GerarCabecalho(versaoHttp, "text/html;chaset=utf-8", "404",bytesConteudo.Length);
+                }
                 int bytesEnviados = conexao.Send(bytesCabecalho, bytesCabecalho.Length, 0);
                 bytesEnviados += conexao.Send(bytesConteudo, bytesConteudo.Length, 0);
                 conexao.Close();
