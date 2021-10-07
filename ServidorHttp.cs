@@ -9,9 +9,11 @@ class ServidorHttp
     private TcpListener Controlador {get;set;}
     private int Porta {get;set;}
     private int QtdeRequest { get; set; }
+    private string HtmlExemplo {get;set;}
     public ServidorHttp(int porta = 8080)
     {
         this.Porta = porta;
+        this.CriarHtmlExemplo();
         try
         {
             this.Controlador = new TcpListener(IPAddress.Parse("127.0.0.1"),this.Porta);
@@ -47,8 +49,10 @@ class ServidorHttp
             if(textoRequisicao.Length > 0)
             {
                 Console.WriteLine($"\n{textoRequisicao}\n");
-                var bytesCabecalho = GerarCabecalho("HTTP/1.1", "text/html;chaset=utf-8", "200",0);
+                var bytesConteudo = Encoding.UTF8.GetBytes(this.HtmlExemplo, 0, this.HtmlExemplo.Length);
+                var bytesCabecalho = GerarCabecalho("HTTP/1.1", "text/html;chaset=utf-8", "200",bytesConteudo.Length);
                 int bytesEnviados = conexao.Send(bytesCabecalho, bytesCabecalho.Length, 0);
+                bytesEnviados += conexao.Send(bytesConteudo, bytesConteudo.Length, 0);
                 conexao.Close();
                 Console.WriteLine($"\n{bytesEnviados} bytes enviados em resposta à requisição #{numeroRequest}.");
             }
@@ -64,5 +68,14 @@ class ServidorHttp
         texto.Append($"Content-Length: {qtdeBytes}{Environment.NewLine}{Environment.NewLine}");
         return Encoding.UTF8.GetBytes(texto.ToString());
 
+    }
+    private void CriarHtmlExemplo()
+    {
+        StringBuilder html = new StringBuilder();
+        html.Append("<!DOCTYPE html><html lang =\"pt-br\"><head><meta charset=\"UTF-8\">");
+        html.Append("<meta name=\"viewport\" content=\"width=device=width, initial-scale=1.0\">");
+        html.Append("<title>Página Estática</title></head><body>");
+        html.Append("<h1>Página Estática</h1></body></html>");
+        this.HtmlExemplo = html.ToString();
     }
 }
