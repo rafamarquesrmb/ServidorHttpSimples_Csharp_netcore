@@ -6,7 +6,8 @@ namespace ServidorHttpSimples
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var servidorHttp = new ServidorHttp();
+            
         }
     }
 }
